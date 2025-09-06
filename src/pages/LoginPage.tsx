@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { GraduationCap, Mail, Lock, UserCheck, AlertCircle, Loader2 } from 'lucide-react';
+import { GraduationCap, Mail, Lock, UserCheck, AlertCircle, Loader2, CheckCircle } from 'lucide-react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -12,6 +12,8 @@ export default function LoginPage() {
   
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const locationState = location.state as { message?: string; type?: 'success' | 'error' } | null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,6 +61,21 @@ export default function LoginPage() {
         </div>
         
         <form className="mt-8 space-y-6 bg-white p-8 rounded-xl shadow-lg" onSubmit={handleSubmit}>
+          {locationState?.message && (
+            <div className={`px-4 py-3 rounded-lg flex items-center ${
+              locationState.type === 'success' 
+                ? 'bg-green-50 border border-green-200 text-green-700' 
+                : 'bg-red-50 border border-red-200 text-red-600'
+            }`}>
+              {locationState.type === 'success' ? (
+                <CheckCircle className="h-5 w-5 mr-2" />
+              ) : (
+                <AlertCircle className="h-5 w-5 mr-2" />
+              )}
+              {locationState.message}
+            </div>
+          )}
+          
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg flex items-center">
               <AlertCircle className="h-5 w-5 mr-2" />
@@ -135,6 +152,12 @@ export default function LoginPage() {
           </button>
           
           <div className="mt-4 text-center text-sm text-gray-600">
+            <p className="mb-4">
+              Don't have an account?{' '}
+              <Link to="/signup" className="font-medium text-blue-600 hover:text-blue-500">
+                Sign up here
+              </Link>
+            </p>
             <p className="mb-2">Demo accounts:</p>
             <div className="text-xs space-y-1">
               <p><strong>Student:</strong> student@college.edu / password</p>

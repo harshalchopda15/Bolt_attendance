@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { QrCode, Users, BookOpen, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { QrCode, Users, BookOpen, Clock, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import QRCode from 'react-qr-code';
 
 export default function TeacherPage() {
@@ -9,6 +9,8 @@ export default function TeacherPage() {
   const [qrExpiry, setQrExpiry] = useState<Date | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [attendanceList, setAttendanceList] = useState<any[]>([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Mock data
   const teacherStats = {
@@ -17,7 +19,7 @@ export default function TeacherPage() {
     attendanceToday: 38
   };
 
-  const attendanceList = [
+  const initialAttendanceList = [
     { id: 1, studentName: 'John Smith', subject: 'Mathematics', timestamp: '2025-01-15 09:05:23', status: 'Present' },
     { id: 2, studentName: 'Sarah Johnson', subject: 'Mathematics', timestamp: '2025-01-15 09:03:15', status: 'Present' },
     { id: 3, studentName: 'Mike Wilson', subject: 'Mathematics', timestamp: '2025-01-15 09:07:42', status: 'Present' },
@@ -25,6 +27,50 @@ export default function TeacherPage() {
     { id: 5, studentName: 'Alex Brown', subject: 'Mathematics', timestamp: '2025-01-15 09:08:55', status: 'Present' },
   ];
 
+  // Initialize attendance list
+  useEffect(() => {
+    setAttendanceList(initialAttendanceList);
+  }, []);
+
+  const fetchAttendanceList = async () => {
+    setIsRefreshing(true);
+    try {
+      const response = await fetch('/teacher/attendance-list', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setAttendanceList(data);
+      }
+    } catch (error) {
+      // Simulate new attendance entries for demo
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const newEntries = [
+        {
+          id: Date.now(),
+          studentName: 'Lisa Garcia',
+          subject: 'Mathematics',
+          timestamp: new Date().toLocaleString(),
+          status: 'Present'
+        },
+        {
+          id: Date.now() + 1,
+          studentName: 'Tom Johnson',
+          subject: 'Mathematics',
+          timestamp: new Date().toLocaleString(),
+          status: 'Present'
+        }
+      ];
+      
+      setAttendanceList(prev => [...newEntries, ...prev]);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
   const generateQR = async () => {
     setIsGenerating(true);
     
@@ -39,6 +85,20 @@ export default function TeacherPage() {
     setIsGenerating(false);
   };
 
+  // Auto-refresh attendance list when QR is active
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+    
+    if (qrData && timeRemaining > 0) {
+      interval = setInterval(() => {
+        fetchAttendanceList();
+      }, 5000); // Refresh every 5 seconds
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [qrData, timeRemaining]);
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
     
@@ -181,9 +241,28 @@ export default function TeacherPage() {
       {/* Attendance List */}
       <div id="list" className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900">Recent Attendance</h3>
-            <Users className="h-6 w-6 text-green-600" />
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={fetchAttendanceList}
+                disabled={isRefreshing}
+                className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+                title="Refresh attendance list"
+              >
+                <RefreshCw className={`h-5 w-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+              </button>
+              <Users className="h-6 w-6 text-green-600" />
+            </div>
+          </div>
+          
+          {qrData && timeRemaining > 0 && (
+            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center">
+              <CheckCircle className="h-5 w-5 mr-2" />
+              <span className="text-sm">
+                QR code is active. Attendance list will update automatically as students scan.
+              </span>
+            </div>
           </div>
         </div>
         

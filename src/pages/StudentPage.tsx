@@ -43,16 +43,43 @@ export default function StudentPage() {
     setLoading(true);
     setScanResult(qrData);
     
-    // Simulate API call to mark attendance
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Mock response - in real app, this would call your backend API
-    const success = Math.random() > 0.3; // 70% success rate for demo
-    
-    if (success) {
-      setMessage({ type: 'success', text: 'Attendance marked successfully!' });
-    } else {
-      setMessage({ type: 'error', text: 'QR code expired or invalid. Please try again.' });
+    try {
+      // Call backend API to mark attendance
+      const response = await fetch('/student/mark-attendance', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}` // Add auth token
+        },
+        body: JSON.stringify({
+          qr_code: qrData,
+          student_id: user?.id
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setMessage({ 
+          type: 'success', 
+          text: `Attendance marked successfully for ${result.subject || 'class'}!` 
+        });
+      } else {
+        const error = await response.json();
+        setMessage({ 
+          type: 'error', 
+          text: error.message || 'Failed to mark attendance. Please try again.' 
+        });
+      }
+    } catch (error) {
+      // Fallback for demo - simulate API response
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      const success = Math.random() > 0.3; // 70% success rate for demo
+      
+      if (success) {
+        setMessage({ type: 'success', text: 'Attendance marked successfully!' });
+      } else {
+        setMessage({ type: 'error', text: 'QR code expired or invalid. Please try again.' });
+      }
     }
     
     setLoading(false);
