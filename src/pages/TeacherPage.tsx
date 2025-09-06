@@ -240,6 +240,7 @@ export default function TeacherPage() {
 
       {/* Attendance List */}
       <div id="list" className="bg-white rounded-lg shadow-sm border border-gray-200">
+        <>
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900">Recent Attendance</h3>
@@ -306,6 +307,7 @@ export default function TeacherPage() {
             </tbody>
           </table>
         </div>
+        </>
       </div>
     </div>
   );
