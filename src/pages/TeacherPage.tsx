@@ -263,7 +263,7 @@ export default function TeacherPage() {
                 QR code is active. Attendance list will update automatically as students scan.
               </span>
             </div>
-          </div>
+          )}
         </div>
         
         <div className="overflow-x-auto">
