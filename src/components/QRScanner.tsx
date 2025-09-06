@@ -100,33 +100,42 @@ export default function QRScanner({ onResult, onClose, loading }: QRScannerProps
               </div>
             </div>
           ) : (
-            <div className="relative bg-gray-900 rounded-lg h-64 overflow-hidden">
+            <div className="relative bg-gray-900 rounded-lg h-80 md:h-96 overflow-hidden">
               <video
                 ref={videoRef}
                 autoPlay
                 playsInline
                 muted
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover transform scale-110"
               />
               
               {/* Scanning overlay */}
-              <div className="absolute inset-4 border-2 border-blue-500 rounded-lg">
-                <div className="absolute inset-0 border border-blue-300 rounded-lg animate-pulse" />
+              <div className="absolute inset-8 border-4 border-blue-500 rounded-lg shadow-lg">
+                <div className="absolute inset-0 border-2 border-blue-300 rounded-lg animate-pulse" />
+                <div className="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-blue-400"></div>
+                <div className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-blue-400"></div>
+                <div className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-blue-400"></div>
+                <div className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-blue-400"></div>
               </div>
               
               {/* Controls overlay */}
-              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+              <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2">
                 <button
                   onClick={simulateQRCode}
                   disabled={loading}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 shadow-lg"
                 >
                   {loading ? (
-                    <Loader2 className="h-4 w-4 animate-spin mx-auto" />
+                    <Loader2 className="h-5 w-5 animate-spin mx-auto" />
                   ) : (
                     'Simulate QR Scan'
                   )}
                 </button>
+              </div>
+              
+              {/* Instructions overlay */}
+              <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-60 text-white px-4 py-2 rounded-lg text-sm">
+                Position QR code within the frame
               </div>
               
               {!isScanning && (
@@ -190,7 +199,7 @@ export default function QRScanner({ onResult, onClose, loading }: QRScannerProps
       )}
 
       <div className="text-center text-sm text-gray-500">
-        <p>Point your camera at the QR code or enter the code manually</p>
+        <p>Position the QR code within the scanning frame for best results</p>
       </div>
     </div>
   );
